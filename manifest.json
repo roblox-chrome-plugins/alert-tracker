@@ -1,0 +1,26 @@
+{
+	"name": "Roblox Message Poller",
+	"Description": "Allows the message count, number of friend requests, and currency totals to be viewed from any page",
+	"version": "1.7.0",
+	"icons": {
+		"16": "icon.ico",
+		"48": "icon.ico",
+		"128": "icon.ico"
+	},
+	"browser_action": {
+		"default_icon": "icon.ico",
+		"popup": "popup.html"
+	},
+    "background_page": "background.html",
+	"options_page": "options.html",
+	"permissions": [
+		"http://www.roblox.com/",
+		"tabs"
+	],
+	"content_scripts": [{
+		"matches": ["http://www.roblox.com/*"],
+		"js": ["jquery-1.7.2.min.js", "content.js"],
+		"run_at" : "document_start"
+	}],
+	"run_at" : "document_start"
+}

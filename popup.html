@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+	<head>
+		<script src="jquery-1.7.2.min.js"></script>
+		<style>
+			body {
+				font-family: Arial, Helvetica, sans-serif;
+				font-size: 14px;
+			}
+			.error {
+				height: 40px;
+				text-align: center;
+				line-height: 20px;
+			}
+			
+			.error a {
+				display: block;
+			}
+			
+			.alert {
+				display: block;
+				-webkit-box-sizing: border-box;
+				padding: 2px;
+				padding-left: 20px;
+				height: 20px;
+				background: url(icons.png) no-repeat 0px;
+				float: left;
+				width: 50%;
+				text-decoration: none;
+				font-weight: bold
+			}
+			
+			.alert.messages {
+				background-position: 0px 0px;
+				color: #444;
+			}
+			.alert.messages:hover {
+				background-position: 0px -20px;
+				color: #919191;
+			}
+			
+			.alert.robux {
+				background-position: 0px -40px;
+				color: #080;
+			}
+			.alert.robux:hover {
+				background-position: 0px -60px;
+				color: #0D0;
+			}
+			
+			.alert.friends {
+				background-position: 0px -80px;
+				color: #05B;
+			}
+			.alert.friends:hover {
+				background-position: 0px -100px;
+				color: #189DE8;
+			}
+			
+			.alert.tickets {
+				background-position: 0px -120px;
+				color: #a61;
+			}
+			.alert.tickets:hover {
+				background-position: 0px -140px;
+				color: #FB6;
+			}
+			
+			#info {
+				width: 160px;
+				height: 40px;
+			}
+			
+			.loading {
+				background: url(loading.gif) no-repeat 50% 50%;
+				line-height: 40px;
+				height: 100%;
+				width: 100%;
+				text-align: center;
+			}
+			body {
+				margin: 0;
+				padding: 0;
+				font-family: Arial, sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="info">
+			<div class="loading">loading...</div>
+			<script>
+				var bkg = chrome.extension.getBackgroundPage();
+				$('a').live('click',function(){
+					var url = $(this).attr('href');
+					bkg.goToAlertPage(url);
+					window.close();
+				});
+				function updatePage() {
+					bkg.getNotification(function(notification) {
+						$('#info').empty().append(notification);
+					});
+				}
+				updatePage();
+			</script>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,30 @@
+<html>
+	<head>
+		<title>Roblox Message Poller Options</title>
+		<script src="jquery-1.6.2.min.js"></script>
+	</head>
+	<script type="text/javascript">
+	$(function() {
+		$('#poll-time').val(localStorage.pollTime || 1000 * 60 * 15);
+	
+		$('#save').click(function() {		
+			localStorage.pollTime = $('#poll-time').val();
+			window.close();
+		});
+	});
+	</script>
+
+	<body>
+		<h1>Roblox Message Poller Options</h1>
+		<label for="poll-time">Update every</label>
+		<select id="poll-time">
+			<option value="30000">30 seconds</option>
+			<option value="60000">minute</option>
+			<option value="300000">5 minutes</option>
+			<option value="900000">15 minutes</option>
+			<option value="1800000">half hour</option>
+			<option value="3600000">hour</option>
+		</select>
+		<button id="save">Save and exit</button>
+	</body>
+</html>

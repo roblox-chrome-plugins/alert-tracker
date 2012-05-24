@@ -1,3 +1,4 @@
+// A class that represents the information associated with an alert
 function AlertInfo(obj) {
 	for(var key in obj)
 		this[key] = obj[key];
@@ -23,6 +24,7 @@ function AlertInfo(obj) {
 	}
 }
 
+// The list of alerts
 var alerts = [
 	new AlertInfo({
 		name: 'Messages',
@@ -60,45 +62,79 @@ var alerts = [
 	})
 ];
 
-var badges = [];
-
-var poller = (function() {
-	var intervalId = null;
-	var time = 1000 * 60 * 15; // 15 minutes default
-	var p = {};
-	p.__defineGetter__("time", function() {
-        return time;
-    });
-    p.__defineSetter__("time", function(val) {
-		if(val == null || val < 1000) return;
-		
-		time = +val;
-		if(intervalId !== null) clearInterval(intervalId);
-		intervalId = setInterval(function() { alerts.update(); }, time);
-		alerts.update();
-    });
-	return p;
-})();
-
+//A singleton to handle log in and out transitions
 var authentication = (function() {
 	var loggedIn = null;
 	
-	var a = {
+	return {
 		onLogIn: function() { console.log("Logged In"); },
-		onLogOut: function() { console.log("Logged Out"); }
+		onLogOut: function() { console.log("Logged Out"); },
+		get loggedIn() { return loggedIn; },
+		set loggedIn(value) {
+			if(val === loggedIn) return
+			loggedIn = val;
+			if(val === true) this.onLogIn();
+			else if(val === false) this.onLogOut();
+		}
 	};
-	a.__defineGetter__("loggedIn", function() {
-        return loggedIn;
-    });
-	a.__defineSetter__("loggedIn", function(val) {
-        if(val === loggedIn) return
-		loggedIn = val;
-		if(val === true) this.onLogIn();
-		else if(val === false) this.onLogOut();
-    });
-	return a;
 })();
 
+//Attach some methods onto the alerts array
+alerts.updateFrom = function(alertBox) {
+	var isLoggedIn = alertBox.size() > 0;
+
+	if(isLoggedIn) {
+		badges = this.filter(function(alert) {
+			alert.value = alertBox.find(alert.selector).text()
+				.replace(/K\+/gi, '000')
+				.replace(/M\+/gi, '000000')
+				.replace(/G\+/gi, '000000000')
+				.replace(/[^0-9]/g, '');
+			return alert.notify && alert.value > 0;
+		});
+	} else {
+		badges = [];
+		this.forEach(function(alert) {
+			alert.value = null;
+		});
+	}
+	authentication.loggedIn = isLoggedIn;
+}
+alerts.update = function(callback) {
+	$.get(
+		'http://www.roblox.com/User.aspx?ID=921458',
+		function(data) {
+			//remove images and jQuerify
+			var alertBox = $(data.replace(/<img/gi, '<dontdoit')).find('#Alerts');
+			alerts.updateFrom(alertBox)
+			if(callback) callback();
+		}
+	);
+}
+
+//A singleton to periodically update the alerts
+var poller = (function() {
+	var intervalId = null;
+	var time = 1000 * 60 * 15; // 15 minutes default
+	return {
+		get time() {
+			return time;
+		},
+		set time(value) {
+			if(val == null || val < 1000) return;
+			
+			time = +val;
+			if(intervalId !== null) clearInterval(intervalId);
+			intervalId = setInterval(function() { alerts.update(); }, time);
+			alerts.update();
+		}
+	};
+})();
+
+//the badges to cycle through
+var badges = [];
+
+//handle badge cycling
 (function doBrowserActionDisplay() {
 	var interval = null,
 	    badgeIndex = null;
@@ -144,6 +180,7 @@ var authentication = (function() {
 	
 })();
 
+//Called by popup.html to fill in the HTML
 function getNotification(callback) {	
 	alerts.update(function () {
 		var elems;
@@ -166,39 +203,6 @@ function getNotification(callback) {
 	});
 }
 
-alerts.updateFrom = function(alertBox) {
-	var isLoggedIn = alertBox.size() > 0;
-
-	if(isLoggedIn) {
-		badges = this.filter(function(alert) {
-			alert.value = alertBox.find(alert.selector).text()
-				.replace(/K\+/gi, '000')
-				.replace(/M\+/gi, '000000')
-				.replace(/G\+/gi, '000000000')
-				.replace(/[^0-9]/g, '');
-			return alert.notify && alert.value > 0;
-		});
-	} else {
-		badges = [];
-		this.forEach(function(alert) {
-			alert.value = null;
-		});
-	}
-	authentication.loggedIn = isLoggedIn;
-}
-
-alerts.update = function(callback) {
-	$.get(
-		'http://www.roblox.com/User.aspx?ID=921458',
-		function(data) {
-			//remove images and jQuerify
-			var alertBox = $(data.replace(/<img/gi, '<dontdoit')).find('#Alerts');
-			alerts.updateFrom(alertBox)
-			if(callback) callback();
-		}
-	);
-}
-
 //Update the alerts whenever a roblox page is loaded
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 	if(request.action == "update") {
@@ -208,6 +212,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 	}
 });
 
+//Open the link clicked on a new tab, or focus an existing one
 function goToAlertPage(url) {
 	chrome.tabs.getAllInWindow(undefined, function (tabs) {
 		var exists = false;
@@ -225,9 +230,11 @@ function goToAlertPage(url) {
 	});
 }
 
+//if the storged value changes, change the poller
 $(window).bind('storage', function (e) {
 	e = e.originalEvent;
 	if(e.key == 'pollTime') poller.time = e.newValue;
 });
 
+//Load in the poll interval
 poller.time = localStorage.pollTime;

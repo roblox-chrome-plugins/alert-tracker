@@ -28,7 +28,7 @@ function AlertInfo(obj) {
 var alerts = [
 	new AlertInfo({
 		name: 'Messages',
-		selector: '.MessageAlertCaption',
+		selector: '.MessageAlert',
 		value: null,
 		url: 'http://www.roblox.com/My/Inbox.aspx',
 		color: [68, 68, 68, 255],
@@ -37,7 +37,7 @@ var alerts = [
 	}),
 	new AlertInfo({
 		name: 'Friend Requests',
-		selector: '.FriendsAlertCaption',
+		selector: '.FriendsAlert',
 		value: null,
 		url: 'http://www.roblox.com/User.aspx?submenu=true#friendreqs',
 		color: [0, 85, 187, 255],
@@ -46,7 +46,7 @@ var alerts = [
 	}),
 	new AlertInfo({
 		name: 'ROBUX',
-		selector: '.RobuxAlertCaption',
+		selector: '.RobuxAlert',
 		value: null,
 		url: 'http://www.roblox.com/My/AccountBalance.aspx',
 		color: [0, 136, 0, 255],
@@ -54,7 +54,7 @@ var alerts = [
 	}),
 	new AlertInfo({
 		name: 'Tickets',
-		selector: '.TicketsAlertCaption',
+		selector: '.TicketsAlert',
 		value: null,
 		url: 'http://www.roblox.com/My/AccountBalance.aspx',
 		color: [170, 102, 17, 255],
@@ -70,7 +70,7 @@ var authentication = (function() {
 		onLogIn: function() { console.log("Logged In"); },
 		onLogOut: function() { console.log("Logged Out"); },
 		get loggedIn() { return loggedIn; },
-		set loggedIn(value) {
+		set loggedIn(val) {
 			if(val === loggedIn) return
 			loggedIn = val;
 			if(val === true) this.onLogIn();
@@ -78,39 +78,6 @@ var authentication = (function() {
 		}
 	};
 })();
-
-//Attach some methods onto the alerts array
-alerts.updateFrom = function(alertBox) {
-	var isLoggedIn = alertBox.size() > 0;
-
-	if(isLoggedIn) {
-		badges = this.filter(function(alert) {
-			alert.value = alertBox.find(alert.selector).text()
-				.replace(/K\+/gi, '000')
-				.replace(/M\+/gi, '000000')
-				.replace(/G\+/gi, '000000000')
-				.replace(/[^0-9]/g, '');
-			return alert.notify && alert.value > 0;
-		});
-	} else {
-		badges = [];
-		this.forEach(function(alert) {
-			alert.value = null;
-		});
-	}
-	authentication.loggedIn = isLoggedIn;
-}
-alerts.update = function(callback) {
-	$.get(
-		'http://www.roblox.com/User.aspx?ID=921458',
-		function(data) {
-			//remove images and jQuerify
-			var alertBox = $(data.replace(/<img/gi, '<dontdoit')).find('#Alerts');
-			alerts.updateFrom(alertBox)
-			if(callback) callback();
-		}
-	);
-}
 
 //A singleton to periodically update the alerts
 var poller = (function() {
@@ -120,7 +87,7 @@ var poller = (function() {
 		get time() {
 			return time;
 		},
-		set time(value) {
+		set time(val) {
 			if(val == null || val < 1000) return;
 			
 			time = +val;
@@ -201,6 +168,39 @@ function getNotification(callback) {
 		}
 		callback(elems);
 	});
+}
+
+alerts.updateFrom = function(alertBox) {
+	var isLoggedIn = alertBox.find('#HeaderLoginButton').size() == 0;
+
+	if(isLoggedIn) {
+		badges = this.filter(function(alert) {
+			alert.value = alertBox.find(alert.selector).text()
+				.replace(/K\+/gi, '000')
+				.replace(/M\+/gi, '000000')
+				.replace(/G\+/gi, '000000000')
+				.replace(/[^0-9]/g, '') || 0;
+			return alert.notify && alert.value > 0;
+		});
+	} else {
+		badges = [];
+		this.forEach(function(alert) {
+			alert.value = null;
+		});
+	}
+	authentication.loggedIn = isLoggedIn;
+}
+
+alerts.update = function(callback) {
+	$.get(
+		'http://www.roblox.com/User.aspx?ID=921458',
+		function(data) {
+			//remove images and jQuerify
+			var alertBox = $(data.replace(/<img/gi, '<dontdoit')).find('.BannerRedesign');
+			alerts.updateFrom(alertBox)
+			if(callback) callback();
+		}
+	);
 }
 
 //Update the alerts whenever a roblox page is loaded

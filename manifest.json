@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 
 	"name": "Roblox Message Poller",
-	"version": "1.8.0",
+	"version": "1.8.1",
 	"description": "Allows the message count, number of friend requests, and currency totals to be viewed from any page",
 	"icons": {
 		"16": "icon.ico",

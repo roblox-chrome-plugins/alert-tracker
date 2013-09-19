@@ -196,7 +196,7 @@ alerts.update = function(callback) {
 		'http://www.roblox.com/User.aspx?ID=921458',
 		function(data) {
 			//remove images and jQuerify
-			var alertBox = $(data.replace(/<img/gi, '<dontdoit')).find('.BannerRedesign');
+			var alertBox = $(data.replace(/<img/gi, '<dontdoit')).find('.AlertSpace');
 			alerts.updateFrom(alertBox)
 			if(callback) callback();
 		}

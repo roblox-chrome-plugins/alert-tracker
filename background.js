@@ -2,7 +2,7 @@
 function AlertInfo(obj) {
 	for(var key in obj)
 		this[key] = obj[key];
-	
+
 	this.getValueString = function() {
 		var _000 = 1000; //Bodged thousand separator
 		if(this.value === null) return '?';
@@ -15,7 +15,7 @@ function AlertInfo(obj) {
 			this.value < 100*_000*_000 ? Math.round(this.value / 100000) / 10 + 'M' :
 									     Math.round(this.value / 1000000)     + 'M');
 	}
-	
+
 	this.getFullMessage = function() {
 		return this.getValueString() + ' ' + this.notify[1] + (this.value == 1 ? '' : 's');
 	}
@@ -65,7 +65,7 @@ var alerts = [
 //A singleton to handle log in and out transitions
 var authentication = (function() {
 	var loggedIn = null;
-	
+
 	return {
 		onLogIn: function() { console.log("Logged In"); },
 		onLogOut: function() { console.log("Logged Out"); },
@@ -89,7 +89,7 @@ var poller = (function() {
 		},
 		set time(val) {
 			if(val == null || val < 1000) return;
-			
+
 			time = +val;
 			if(intervalId !== null) clearInterval(intervalId);
 			intervalId = setInterval(function() { alerts.update(); }, time);
@@ -105,7 +105,7 @@ var badges = [];
 (function doBrowserActionDisplay() {
 	var interval = null,
 	    badgeIndex = null;
-	
+
 	var getTitle = function () {
 		var titleArray = badges.map(function(b) { return b.getFullMessage(); });
 		var title = titleArray[titleArray.length - 1];
@@ -114,27 +114,27 @@ var badges = [];
 		}
 		return title;
 	};
-	
+
 	authentication.onLogOut = function () {
 		badgeIndex = null;
 		clearInterval(interval);
-		
+
 		chrome.browserAction.setBadgeText({text: 'X'});
 		chrome.browserAction.setTitle({title: 'Not logged in'});
 		chrome.browserAction.setBadgeBackgroundColor({color: [128, 128, 128, 255]});
 	};
-	authentication.onLogIn = function () {		
+	authentication.onLogIn = function () {
 		badgeIndex = 0;
 		showBadges();
 		interval = setInterval(showBadges, 5000);
 	};
-	
+
 	var showBadges = function () {
 		if (badgeIndex >= badges.length) {
 			badgeIndex = 0;
 		}
 		chrome.browserAction.setTitle({title: getTitle()});
-		
+
 		if (badges.length == 0) {
 			chrome.browserAction.setBadgeText({text: ''});
 		} else {
@@ -144,11 +144,11 @@ var badges = [];
 			badgeIndex++;
 		}
 	}
-	
+
 })();
 
 //Called by popup.html to fill in the HTML
-function getNotification(callback) {	
+function getNotification(callback) {
 	alerts.update(function () {
 		var elems;
 		if(authentication.loggedIn) {
@@ -222,7 +222,7 @@ function goToAlertPage(url) {
 				return;
 			}
 		});
-		
+
 		if(exists != false)
 			chrome.tabs.update(exists, {selected: true});
 		else
